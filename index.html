@@ -1,780 +1,709 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monthly Loan & Interest Rate Calculator</title>
-    <!-- Include html-docx-js library for exporting HTML to Word docx -->
-    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --card-border: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --success: #34d399;
-            --danger: #f87171;
-            --radius: 12px;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>INTEREST & LOAN CALCULATOR</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+<style>:root {
+  --bg: #0b1320;
+  --card: #111a2e;
+  --card-border: #1e293b;
+  --ink: #ffffff;
+  --muted: #ffffff;
+  --brand: #2563eb;
+  --success: #10b981;
+  --orange: #f59e0b;
+  --danger: #ef4444;
+  --line: #1e293b;
+}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 16px;
-            line-height: 1.5;
-        }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+body {
+  margin: 0;
+  font-family: "MS Sans Serif", Geneva, sans-serif;
+  font-size: 16px;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
 
-        header {
-            margin-bottom: 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+button, input, select, textarea { 
+  font: inherit; 
+  color: #ffffff; 
+  font-size: 16px; 
+  -webkit-appearance: none;
+  appearance: none;
+}
 
-        header h1 {
-            font-size: 1.5rem;
-            color: var(--text-main);
-            margin-bottom: 6px;
-        }
+.main {
+  max-width: 1250px;
+  width: 100%;
+}
 
-        header p {
-            color: var(--text-muted);
-            font-size: 0.88rem;
-            margin-bottom: 12px;
-            padding: 0 10px;
-        }
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+}
 
-        .signature-badge {
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid var(--card-border);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: var(--accent);
-            font-weight: 500;
-        }
+.small { font-size: 16px; color: #ffffff; }
 
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
+.layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
 
-        @media(min-width: 900px) {
-            .grid-layout {
-                grid-template-columns: 380px 1fr;
-            }
-            body {
-                padding: 24px;
-            }
-            header h1 {
-                font-size: 1.8rem;
-            }
-        }
+.sub-box {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 16px;
+  color: #ffffff;
+}
 
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius);
-            padding: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
+.formgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.formrow label { display: block; font-size: 15px; color: #ffffff; margin-bottom: 6px; font-weight: 600; }
 
-        .card-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 10px;
-        }
+input, select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 16px;
+}
 
-        .card h2 {
-            font-size: 1.1rem;
-            color: var(--accent);
-            margin-bottom: 14px;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 8px;
-        }
+select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
 
-        .section-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 14px;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 8px;
-        }
+input:focus, select:focus { outline: 1px solid var(--brand); }
 
-        .section-header-flex h2 {
-            margin-bottom: 0;
-            border-bottom: none;
-            padding-bottom: 0;
-        }
+.calc-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  text-align: center;
+}
+.calc-summary div label {
+  display: block;
+  font-size: 12px;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.calc-summary div val {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
 
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            flex-wrap: wrap;
-        }
+.table-container {
+  margin-top: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  -webkit-overflow-scrolling: touch;
+}
 
-        @media(min-width: 600px) {
-            .btn-group {
-                width: auto;
-            }
-        }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 15px;
+  color: #ffffff;
+}
 
-        .action-btn {
-            flex: 1;
-            background-color: #0f172a;
-            color: var(--accent);
-            border: 1px solid var(--accent);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-        }
+th, td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--card-border);
+  color: #ffffff;
+  font-size: 15px;
+  white-space: nowrap;
+}
 
-        .reset-btn {
-            background-color: rgba(248, 113, 113, 0.15);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
+th {
+  background: #0f172a;
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
 
-        /* Mobile-Friendly Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 16px;
-        }
+tr:hover { background: rgba(30, 41, 59, 0.4); }
 
-        .modal-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius);
-            padding: 20px;
-            max-width: 340px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-        }
+.btn-group {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
 
-        .modal-card h3 {
-            color: var(--accent);
-            font-size: 1.2rem;
-            margin-bottom: 6px;
-        }
+.btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  transition: opacity 0.2s;
+  flex: 1;
+  justify-content: center;
+  min-width: 90px;
+}
 
-        .modal-card p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 14px;
-        }
+.btn:active { opacity: 0.7; }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-orange { background: var(--orange); color: #000; }
+.btn-danger { background: var(--danger); color: #fff; width: 100%; margin-top: 10px; }
 
-        .modal-card img {
-            width: 100%;
-            max-width: 200px;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            border: 2px solid var(--card-border);
-        }
+/* MODAL STYLES */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.modal-content {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.modal-content h3 { color: #38bdf8; margin-top: 0; margin-bottom: 8px; }
+.gcash-qr {
+  width: 200px;
+  height: 200px;
+  background: #fff;
+  margin: 14px auto;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--card-border);
+  overflow: hidden;
+}
+.gcash-qr img { width: 100%; height: 100%; object-fit: contain; }
 
-        .modal-name {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 4px;
-        }
+.signature-footer {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--card-border);
+  text-align: right;
+  font-size: 13px;
+  color: var(--muted);
+}
 
-        .modal-number {
-            font-size: 0.9rem;
-            color: var(--accent);
-            font-weight: 600;
-            margin-bottom: 18px;
-        }
+@media print {
+  body { background: #fff; color: #000; display: block; padding: 0; }
+  .card { border: none; box-shadow: none; padding: 0; background: #fff; color: #000; }
+  input, select { border: 1px solid #ccc; background: #fff; color: #000; }
+  th { background: #eee !important; color: #000 !important; }
+  tr:hover { background: transparent; }
+  .btn-group, .btn-danger, .modal-overlay { display: none !important; }
+  .table-container { max-height: none; overflow: visible; border: 1px solid #ccc; }
+  .calc-summary { background: #f8fafc; border: 1px solid #ccc; }
+  .calc-summary div val { color: #000 !important; }
+  .sub-box { color: #000 !important; border: 1px solid #ccc; background: #fff !important; }
+  .signature-footer { color: #000 !important; border-top: 1px solid #ccc; }
+}
 
-        .modal-close-btn {
-            background-color: var(--accent);
-            color: #0f172a;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
+@media (max-width: 900px) {
+  .layout-grid { grid-template-columns: 1fr; }
+  .formgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
-        .form-group {
-            margin-bottom: 14px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            background-color: #0f172a;
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 1rem;
-        }
-
-        input[type="range"] {
-            padding: 0;
-            accent-color: var(--accent);
-            height: 8px;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .range-value {
-            float: right;
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .metric-box {
-            background-color: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-        }
-
-        .metric-box .label {
-            font-size: 0.68rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 4px;
-        }
-
-        .metric-box .value {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            word-break: break-all;
-        }
-
-        .metric-box .value.highlight {
-            color: var(--success);
-        }
-
-        .table-container {
-            overflow-x: auto;
-            max-height: 350px;
-            overflow-y: auto;
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.82rem;
-            white-space: nowrap;
-        }
-
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        th {
-            background-color: #0f172a;
-            color: var(--text-muted);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .footer-note {
-            margin-top: 16px;
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            text-align: center;
-            padding: 0 10px;
-        }
-
-        /* PRINT SETTINGS: Schedule ra gyud ang mugawas */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printableScheduleCard, #printableScheduleCard * {
-                visibility: visible;
-            }
-            #printableScheduleCard {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: #fff !important;
-                color: #000 !important;
-                border: none !important;
-                box-shadow: none !important;
-                padding: 0 !important;
-            }
-            .results-grid, .section-header-flex .btn-group, #printableScheduleCard > h2:first-of-type {
-                display: none !important;
-            }
-            .section-header-flex h2 {
-                color: #000 !important;
-                font-size: 1.3rem !important;
-            }
-            .table-container {
-                max-height: none !important;
-                overflow: visible !important;
-                border: none !important;
-            }
-            table {
-                font-size: 10pt !important;
-                width: 100% !important;
-            }
-            th {
-                background-color: #f1f5f9 !important;
-                color: #000 !important;
-                border-bottom: 2px solid #000 !important;
-            }
-            td {
-                border-bottom: 1px solid #cbd5e1 !important;
-                color: #000 !important;
-            }
-        }
-    </style>
+@media (max-width: 540px) {
+  body { padding: 8px; }
+  .card { padding: 14px; }
+  .formgrid { grid-template-columns: 1fr; }
+  .calc-summary { grid-template-columns: 1fr; gap: 8px; }
+  .btn { width: 100%; flex: none; }
+  .signature-footer { text-align: center; }
+}</style>
+<!-- SheetJS for Excel export functionality -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Monthly Interest & Loan Calculator</h1>
-        <p>Evaluate reducing balances, fixed add-on rates, and compound terms optimized for monthly repayments.</p>
-        <div class="signature-badge">App developed by: dandarz &copy;2026</div>
-    </header>
+<main class="main">
+  <div class="card">
+    <h3 style="margin-top:0; color: #38bdf8; font-family: 'MS Sans Serif', Geneva, sans-serif; font-size: 22px;">🧮 Percentage Rate & Loan Calculator</h3>
+    <p class="small" style="margin-bottom: 16px; font-size: 15px;">Manages Loan Interest Rates & Amortization</p>
 
-    <div class="grid-layout">
-        <!-- Input Panel -->
-        <div class="card">
-            <div class="card-header-flex">
-                <h2>Loan Parameters</h2>
-                <button class="reset-btn" type="button" onclick="openDonationModal()">🔄 Reset</button>
-            </div>
-            
-            <div class="form-group">
-                <label for="loanAmount">Principal Loan Amount (₱)</label>
-                <input type="number" id="loanAmount" value="100000" step="5000" min="1000" inputmode="numeric">
-            </div>
-
-            <div class="form-group">
-                <label for="interestRate">Nominal Annual Interest Rate (%)</label>
-                <input type="number" id="interestRate" value="5" step="0.5" min="0" inputmode="decimal">
-            </div>
-
-            <div class="form-group">
-                <label for="loanTermMonths">
-                    Loan Term (Months) <span class="range-value" id="termDisplay">12 mo (1 yr)</span>
-                </label>
-                <input type="range" id="loanTermSlider" value="12" min="1" max="60" step="1">
-                <input type="number" id="loanTermMonths" value="12" min="1" max="60" step="1" style="margin-top: 8px;" inputmode="numeric">
-            </div>
-
-            <div class="form-group">
-                <label for="interestType">Interest Calculation Method</label>
-                <select id="interestType">
-                    <option value="reducing">Reducing / Diminishing Balance</option>
-                    <option value="fixed">Fixed / Add-on Flat Rate</option>
-                    <option value="compound">Compound Interest (Debt Accrual)</option>
-                </select>
-            </div>
+    <div class="layout-grid">
+      <!-- LEFT BOX: Inputs & Summary -->
+      <div class="sub-box">
+        <b style="font-size: 16px; color: #ffffff; display: block; margin-bottom: 14px;">LOAN PARAMETERS</b>
+        <div class="formgrid">
+          <div class="formrow">
+            <label>Principal Amount (₱)</label>
+            <input id="calcP" type="number" min="0" placeholder="e.g. 50000" oninput="runStandaloneCalc()">
+          </div>
+          <div class="formrow">
+            <label>Interest Rate (%)</label>
+            <input id="calcR" type="number" min="0" step="0.01" placeholder="e.g. 1" oninput="runStandaloneCalc()">
+          </div>
+          <div class="formrow">
+            <label>Rate Type</label>
+            <select id="calcType" onchange="runStandaloneCalc()">
+              <option value="Fixed Rate">Fixed Rate</option>
+              <option value="Flat">Flat Rate</option>
+              <option value="Diminishing">Diminishing Rate</option>
+              <option value="Compound">Compound Rate</option>
+              <option value="BDO Rate">BDO Rate</option>
+            </select>
+          </div>
+          <div class="formrow">
+            <label>Term (Months)</label>
+            <input id="calcT" type="number" min="1" value="12" oninput="runStandaloneCalc()">
+          </div>
+          <div class="formrow" style="grid-column: 1 / -1;">
+            <label>Payment Frequency</label>
+            <select id="calcFreq" onchange="runStandaloneCalc()">
+              <option value="Monthly">Monthly</option>
+              <option value="Every 15 Days">Every 15 Days</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Daily">Daily</option>
+            </select>
+          </div>
         </div>
 
-        <!-- Output Panel / Printable Schedule Card -->
-        <div class="card" id="printableScheduleCard">
-            <h2>Amortization Summary</h2>
-            
-            <div class="results-grid">
-                <div class="metric-box">
-                    <div class="label">Principal</div>
-                    <div class="value" id="resPrincipal">₱0.00</div>
-                </div>
-                <div class="metric-box">
-                    <div class="label">Monthly Payment</div>
-                    <div class="value highlight" id="resPayment">₱0.00</div>
-                </div>
-                <div class="metric-box">
-                    <div class="label">Total Interest</div>
-                    <div class="value" id="resTotalInterest">₱0.00</div>
-                </div>
-                <div class="metric-box">
-                    <div class="label">Total Repayment</div>
-                    <div class="value" id="resTotalPayment">₱0.00</div>
-                </div>
-            </div>
+        <button class="btn btn-danger" onclick="openGcashModal()">🔄 Reset Data</button>
 
-            <div class="section-header-flex">
-                <h2>Monthly Amortization Schedule</h2>
-                <div class="btn-group">
-                    <button class="action-btn" onclick="printSchedule()">🖨️ Print Schedule</button>
-                    <button class="action-btn" onclick="exportToWord()">📄 Export to Word (.docx)</button>
-                    <button class="action-btn" onclick="exportToCSV()">💾 Save as CSV</button>
-                </div>
+        <div style="margin-top: 20px;">
+          <b style="font-size: 16px; color: #ffffff;">CALCULATION RESULT</b>
+          <div class="calc-summary" style="margin-top: 8px;">
+            <div>
+              <label>Total Interest</label>
+              <val id="resInterest" style="color: var(--orange);">₱0.00</val>
             </div>
-
-            <div class="table-container">
-                <table id="scheduleTable">
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Payment</th>
-                            <th>Principal</th>
-                            <th>Interest</th>
-                            <th>Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody id="scheduleBody"></tbody>
-                </table>
+            <div>
+              <label>Total Repayment</label>
+              <val id="resTotal" style="color: var(--success);">₱0.00</val>
             </div>
+            <div>
+              <label>Per Installment</label>
+              <val id="resInstallment" style="color: #38bdf8;">₱0.00</val>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- RIGHT BOX: Amortization Schedule -->
+      <div class="sub-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <b style="font-size: 16px; color: #ffffff;">AMORTIZATION SCHEDULE</b>
+          <div class="btn-group" style="width: 100%;">
+            <button class="btn btn-primary" onclick="printSchedule()">🖨️ Print</button>
+            <button class="btn btn-success" onclick="saveAsExcel()">📊 Excel</button>
+            <button class="btn btn-orange" onclick="saveAsWord()">📄 Word</button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table id="scheduleTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Beginning</th>
+                <th>Principal</th>
+                <th>Interest</th>
+                <th>Total</th>
+                <th>Ending</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <div class="footer-note">
-        *Calculations are computed strictly on a monthly periodic schedule spanning up to 60 months.
+    <!-- SIGNATURE FOOTER -->
+    <div class="signature-footer">
+      App developed by: dandarz &copy;2026
     </div>
-</div>
+  </div>
+</main>
 
-<!-- GCash Donation Modal Popup -->
-<div class="modal-overlay" id="donationModal">
-    <div class="modal-card">
-        <h3>Support This App</h3>
-        <p>We accept donation in order to maintain the web app</p>
-        <img src="gcash.PNG" alt="GCash QR Code">
-        <div class="modal-name">DA***O D.</div>
-        <div class="modal-number">0966 5896709</div>
-        <button class="modal-close-btn" onclick="closeModalAndReset()">Close & Reset Form</button>
+<!-- GCASH DONATION MODAL POPUP -->
+<div id="gcashModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>💙 Support This App</h3>
+    <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">We accept donation in order to maintain the web app.</p>
+    
+    <div class="gcash-qr">
+      <img src="gcash_2.png" alt="GCash QR">
     </div>
+    
+    <p style="font-size: 14px; font-weight: bold; margin: 6px 0; color: #fff;">Account Name: DA**&ast;&ast;O D.</p>
+    <p style="font-size: 14px; color: #38bdf8; margin-bottom: 16px;">Mobile No.: +63 966 589 &hellip;</p>
+
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-primary" onclick="closeModalAndReset()" style="flex:1;">Close & Reset</button>
+      <button class="btn btn-orange" onclick="closeModalOnly()" style="flex:1;">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <script>
-    const loanAmountInput = document.getElementById('loanAmount');
-    const interestRateInput = document.getElementById('interestRate');
-    const loanTermSlider = document.getElementById('loanTermSlider');
-    const loanTermMonthsInput = document.getElementById('loanTermMonths');
-    const termDisplay = document.getElementById('termDisplay');
-    const interestTypeSelect = document.getElementById('interestType');
+const $=id=>document.getElementById(id), peso=n=>new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP' }).format(Number(n||0));
+function periodsPerMonth(f){return f==='Daily'?30:f==='Weekly'?4:f==='Every 15 Days'?2:1}
+function monthsToPeriods(term,f){return Math.max(1,Math.round(Number(term)*periodsPerMonth(f)))}
 
-    const resPrincipal = document.getElementById('resPrincipal');
-    const resPayment = document.getElementById('resPayment');
-    const resTotalInterest = document.getElementById('resTotalInterest');
-    const resTotalPayment = document.getElementById('resTotalPayment');
-    const scheduleBody = document.getElementById('scheduleBody');
-    const donationModal = document.getElementById('donationModal');
+function loanCalc(l){
+  const p=+l.principal||0,r=+l.interest/100,t=+l.term||0,n=monthsToPeriods(t,l.freq),rp=r/periodsPerMonth(l.freq);
+  let interest=0;
+  if(l.type==='Compound'){
+    interest=p*(Math.pow(1+rp,n)-1);
+  } else if(l.type==='Diminishing'){
+    let bal=p,pp=p/n;for(let i=0;i<n;i++){interest+=bal*rp;bal=Math.max(0,bal-pp)}
+  } else if(l.type==='BDO Rate'){
+    interest=p*r*t;
+  } else {
+    interest=p*r*t;
+  }
+  return{interest,total:p+interest,n}
+}
 
-    let currentScheduleData = [];
+function generateSchedule(l, n, totalInterest) {
+  const p = +l.principal || 0;
+  let schedule = [];
+  let balance = p;
 
-    function formatCurrency(amount) {
-        return '₱' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (l.type === 'Diminishing') {
+    const r = +l.interest / 100;
+    const rp = r / periodsPerMonth(l.freq);
+    let principalPerPeriod = p / n;
+    for (let i = 1; i <= n; i++) {
+      let beg = balance;
+      let interestPayment = beg * rp;
+      let principalPayment = (i === n) ? beg : principalPerPeriod;
+      let totalPayment = principalPayment + interestPayment;
+      let end = Math.max(0, beg - principalPayment);
+      
+      schedule.push({i, beg, principal: principalPayment, interest: interestPayment, total: totalPayment, end});
+      balance = end;
     }
-
-    function syncTerm(source, value) {
-        let months = parseInt(value) || 1;
-        if (months > 60) months = 60;
-        if (months < 1) months = 1;
-
-        loanTermSlider.value = months;
-        loanTermMonthsInput.value = months;
-
-        const yrs = (months / 12).toFixed(1);
-        termDisplay.textContent = `${months} mo (${yrs} yrs)`;
-        calculateLoan();
+  } else if (l.type === 'Compound') {
+    const r = +l.interest / 100;
+    const rp = r / periodsPerMonth(l.freq);
+    for (let i = 1; i <= n; i++) {
+      let beg = balance;
+      let interestPayment = beg * rp;
+      let principalPayment = (i === n) ? beg : (totalInterest / n);
+      let totalPayment = principalPayment + interestPayment;
+      let end = Math.max(0, beg + interestPayment - totalPayment);
+      
+      schedule.push({i, beg, principal: principalPayment, interest: interestPayment, total: totalPayment, end});
+      balance = end;
     }
-
-    loanTermSlider.addEventListener('input', (e) => syncTerm('slider', e.target.value));
-    loanTermMonthsInput.addEventListener('input', (e) => syncTerm('input', e.target.value));
-
-    function openDonationModal() {
-        donationModal.style.display = 'flex';
+  } else if (l.type === 'BDO Rate') {
+    let totalRepayment = p + totalInterest;
+    let fixedInstallment = totalRepayment / n;
+    let sumOfPeriods = (n * (n + 1)) / 2;
+    let remainingBal = p;
+    
+    for (let i = 1; i <= n; i++) {
+      let beg = remainingBal;
+      let weight = (n - i + 1);
+      let periodInterest = totalInterest * (weight / sumOfPeriods);
+      let periodTotal = fixedInstallment;
+      let periodPrincipal = periodTotal - periodInterest;
+      
+      if (i === n) {
+        periodPrincipal = remainingBal;
+        periodTotal = periodPrincipal + periodInterest;
+      }
+      
+      let end = Math.max(0, remainingBal - periodPrincipal);
+      schedule.push({i, beg, principal: periodPrincipal, interest: periodInterest, total: periodTotal, end});
+      remainingBal = end;
     }
+  } else {
+    let principalPerPeriod = p / n;
+    let interestPerPeriod = totalInterest / n;
+    let totalPerPeriod = principalPerPeriod + interestPerPeriod;
 
-    function closeModalAndReset() {
-        donationModal.style.display = 'none';
+    for (let i = 1; i <= n; i++) {
+      let beg = balance;
+      let principalPayment = (i === n) ? balance : principalPerPeriod;
+      let end = Math.max(0, beg - principalPayment);
+
+      schedule.push({i, beg, principal: principalPayment, interest: interestPerPeriod, total: totalPerPeriod, end});
+      balance = end;
+    }
+  }
+  return schedule;
+}
+
+let currentScheduleData = [];
+let currentLoanMeta = {};
+
+function runStandaloneCalc(){
+  const p = +$('calcP').value || 0;
+  const r = +$('calcR').value || 0;
+  const t = +$('calcT').value || 0;
+  const type = $('calcType').value;
+  const freq = $('calcFreq').value || 'Monthly';
+
+  const tbody = $('scheduleBody');
+
+  if(!p || !r || !t) {
+    $('resInterest').textContent = peso(0);
+    $('resTotal').textContent = peso(0);
+    $('resInstallment').textContent = peso(0);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td></tr>`;
+    currentScheduleData = [];
+    currentLoanMeta = {};
+    localStorage.removeItem('utang_calc_data');
+    return;
+  }
+
+  const tmpLoan = { principal: p, interest: r, term: t, type: type, freq: freq };
+  const calc = loanCalc(tmpLoan);
+
+  $('resInterest').textContent = peso(calc.interest);
+  $('resTotal').textContent = peso(calc.total);
+  $('resInstallment').textContent = peso(calc.total / (calc.n || 1));
+
+  currentLoanMeta = { ...tmpLoan, interestTotal: calc.interest, totalRepayment: calc.total, installment: calc.total / calc.n, n: calc.n };
+  currentScheduleData = generateSchedule(tmpLoan, calc.n, calc.interest);
+
+  tbody.innerHTML = currentScheduleData.map(row => `
+    <tr>
+      <td>${row.i}</td>
+      <td>${peso(row.beg)}</td>
+      <td>${peso(row.principal)}</td>
+      <td>${peso(row.interest)}</td>
+      <td>${peso(row.total)}</td>
+      <td>${peso(row.end)}</td>
+    </tr>
+  `).join('');
+
+  const stateToSave = {
+    p, r, t, type, freq,
+    schedule: currentScheduleData,
+    meta: currentLoanMeta
+  };
+  localStorage.setItem('utang_calc_data', JSON.stringify(stateToSave));
+}
+
+function openGcashModal() {
+  $('gcashModal').style.display = 'flex';
+}
+
+function closeModalOnly() {
+  $('gcashModal').style.display = 'none';
+}
+
+function closeModalAndReset() {
+  closeModalOnly();
+  
+  $('calcP').value = '';
+  $('calcR').value = '';
+  $('calcT').value = '12';
+  $('calcType').value = 'Fixed Rate';
+  $('calcFreq').value = 'Monthly';
+  
+  $('resInterest').textContent = peso(0);
+  $('resTotal').textContent = peso(0);
+  $('resInstallment').textContent = peso(0);
+  
+  $('scheduleBody').innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td></tr>`;
+  
+  currentScheduleData = [];
+  currentLoanMeta = {};
+  
+  localStorage.removeItem('utang_calc_data');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('utang_calc_data');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      $('calcP').value = data.p || '';
+      $('calcR').value = data.r || '';
+      $('calcT').value = data.t || '';
+      $('calcType').value = data.type || 'Fixed Rate';
+      $('calcFreq').value = data.freq || 'Monthly';
+      
+      if (data.schedule && data.schedule.length > 0) {
+        currentScheduleData = data.schedule;
+        currentLoanMeta = data.meta || {};
         
-        loanAmountInput.value = 100000;
-        interestRateInput.value = 5;
-        loanTermSlider.value = 12;
-        loanTermMonthsInput.value = 12;
-        termDisplay.textContent = "12 mo (1 yr)";
-        interestTypeSelect.value = "reducing";
-        calculateLoan();
+        $('resInterest').textContent = peso(currentLoanMeta.interestTotal);
+        $('resTotal').textContent = peso(currentLoanMeta.totalRepayment);
+        $('resInstallment').textContent = peso(currentLoanMeta.installment);
+
+        $('scheduleBody').innerHTML = currentScheduleData.map(row => `
+          <tr>
+            <td>${row.i}</td>
+            <td>${peso(row.beg)}</td>
+            <td>${peso(row.principal)}</td>
+            <td>${peso(row.interest)}</td>
+            <td>${peso(row.total)}</td>
+            <td>${peso(row.end)}</td>
+          </tr>
+        `).join('');
+      }
+    } catch (e) {
+      console.error("Error loading saved state", e);
     }
+  }
+});
 
-    function calculateLoan() {
-        const principal = parseFloat(loanAmountInput.value) || 0;
-        const annualRate = (parseFloat(interestRateInput.value) || 0) / 100;
-        const totalPeriods = parseInt(loanTermMonthsInput.value) || 1; 
-        const periodicRate = annualRate / 12; 
-        const type = interestTypeSelect.value;
+function printSchedule() {
+  if (!currentScheduleData.length) {
+    alert("Please calculate a loan schedule first!");
+    return;
+  }
+  window.print();
+}
 
-        let payment = 0;
-        let totalInterest = 0;
-        let totalPayment = 0;
-        let schedule = [];
+function saveAsExcel() {
+  if (!currentScheduleData.length) {
+    alert("Please calculate a loan schedule first!");
+    return;
+  }
 
-        if (type === 'reducing') {
-            if (periodicRate === 0) {
-                payment = principal / totalPeriods;
-            } else {
-                payment = principal * (periodicRate * Math.pow(1 + periodicRate, totalPeriods)) / (Math.pow(1 + periodicRate, totalPeriods) - 1);
-            }
+  const wb = XLSX.utils.book_new();
+  
+  const summaryData = [
+    ["LOAN SUMMARY REPORT"],
+    ["Principal Amount", currentLoanMeta.principal],
+    ["Interest Rate (%)", currentLoanMeta.interest],
+    ["Rate Type", currentLoanMeta.type],
+    ["Term (Months)", currentLoanMeta.term],
+    ["Payment Frequency", currentLoanMeta.freq],
+    ["Total Interest", currentLoanMeta.interestTotal],
+    ["Total Repayment", currentLoanMeta.totalRepayment],
+    ["Per Installment", currentLoanMeta.installment],
+    ["Developer", "App developed by: dandarz©2026"],
+    []
+  ];
 
-            let balance = principal;
-            for (let i = 1; i <= totalPeriods; i++) {
-                let interestPayment = balance * periodicRate;
-                let principalPayment = payment - interestPayment;
-                balance -= principalPayment;
+  const header = ["Period", "Beginning Balance", "Principal", "Interest", "Total Payment", "Ending Balance"];
+  const rows = currentScheduleData.map(r => [r.i, r.beg, r.principal, r.interest, r.total, r.end]);
 
-                if (balance < 0) balance = 0;
+  const wsData = summaryData.concat([header], rows);
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-                totalInterest += interestPayment;
-                schedule.push({
-                    period: i,
-                    payment: payment,
-                    principal: principalPayment,
-                    interest: interestPayment,
-                    balance: balance
-                });
-            }
-            totalPayment = principal + totalInterest;
+  XLSX.utils.book_append_sheet(wb, ws, "Amortization Schedule");
+  XLSX.writeFile(wb, "Loan_Amortization_Schedule.xlsx");
+}
 
-        } else if (type === 'fixed') {
-            const yearsFraction = totalPeriods / 12;
-            let totalInterestCalculated = principal * annualRate * yearsFraction;
-            totalPayment = principal + totalInterestCalculated;
-            payment = totalPayment / totalPeriods;
-            totalInterest = totalInterestCalculated;
+function saveAsWord() {
+  if (!currentScheduleData.length) {
+    alert("Please calculate a loan schedule first!");
+    return;
+  }
 
-            let principalPerPeriod = principal / totalPeriods;
-            let interestPerPeriod = totalInterest / totalPeriods;
-            let balance = principal;
+  let htmlContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><title>Loan Amortization Schedule</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #333; line-height: 1.4; }
+      h2 { color: #2563eb; margin-bottom: 5px; }
+      p { margin: 4px 0; font-size: 14px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+      th, td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 13px; text-align: center; }
+      th { background-color: #0f172a; color: #ffffff; }
+      .footer { margin-top: 20px; font-size: 12px; color: #64748B; text-align: right; }
+    </style>
+    </head>
+    <body>
+      <h2>LOAN AMORTIZATION SCHEDULE REPORT</h2>
+      <p><b>Principal Amount:</b> ₱${Number(currentLoanMeta.principal || 0).toLocaleString()}</p>
+      <p><b>Interest Rate:</b> ${currentLoanMeta.interest}% (${currentLoanMeta.type})</p>
+      <p><b>Term:</b> ${currentLoanMeta.term} Month(s) | <b>Frequency:</b> ${currentLoanMeta.freq}</p>
+      <p><b>Total Interest:</b> ₱${Number(currentLoanMeta.interestTotal || 0).toFixed(2)} | <b>Total Repayment:</b> ₱${Number(currentLoanMeta.totalRepayment || 0).toFixed(2)}</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Beginning</th>
+            <th>Principal</th>
+            <th>Interest</th>
+            <th>Total</th>
+            <th>Ending</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
 
-            for (let i = 1; i <= totalPeriods; i++) {
-                balance -= principalPerPeriod;
-                if (balance < 0) balance = 0;
+  currentScheduleData.forEach(row => {
+    htmlContent += `
+      <tr>
+        <td>${row.i}</td>
+        <td>₱${Number(row.beg || 0).toFixed(2)}</td>
+        <td>₱${Number(row.principal || 0).toFixed(2)}</td>
+        <td>₱${Number(row.interest || 0).toFixed(2)}</td>
+        <td>₱${Number(row.total || 0).toFixed(2)}</td>
+        <td>₱${Number(row.end || 0).toFixed(2)}</td>
+      </tr>
+    `;
+  });
 
-                schedule.push({
-                    period: i,
-                    payment: payment,
-                    principal: principalPerPeriod,
-                    interest: interestPerPeriod,
-                    balance: balance
-                });
-            }
+  htmlContent += `
+        </tbody>
+      </table>
+      <div class="footer">App developed by: dandarz&copy;2026</div>
+    </body>
+    </html>
+  `;
 
-        } else if (type === 'compound') {
-            totalPayment = principal * Math.pow(1 + periodicRate, totalPeriods);
-            totalInterest = totalPayment - principal;
-            payment = totalPayment / totalPeriods;
-
-            let balance = principal;
-            for (let i = 1; i <= totalPeriods; i++) {
-                let interestAccrued = balance * periodicRate;
-                balance = (balance + interestAccrued) - payment;
-                if (balance < 0) balance = 0;
-
-                schedule.push({
-                    period: i,
-                    payment: payment,
-                    principal: payment - interestAccrued,
-                    interest: interestAccrued,
-                    balance: balance
-                });
-            }
-        }
-
-        currentScheduleData = schedule;
-
-        resPrincipal.textContent = formatCurrency(principal);
-        resPayment.textContent = formatCurrency(payment);
-        resTotalInterest.textContent = formatCurrency(totalInterest);
-        resTotalPayment.textContent = formatCurrency(totalPayment);
-
-        scheduleBody.innerHTML = '';
-        schedule.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>Month ${row.period}</td>
-                <td>${formatCurrency(row.payment)}</td>
-                <td>${formatCurrency(row.principal)}</td>
-                <td>${formatCurrency(row.interest)}</td>
-                <td>${formatCurrency(row.balance)}</td>
-            `;
-            scheduleBody.appendChild(tr);
-        });
-    }
-
-    function printSchedule() {
-        window.print();
-    }
-
-    function exportToWord() {
-        let htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <style>
-                    body { font-family: 'Calibri', Arial, sans-serif; color: #000; line-height: 1.4; }
-                    h2 { color: #1e293b; border-bottom: 2px solid #38bdf8; padding-bottom: 5px; }
-                    .summary-box { margin-bottom: 20px; font-size: 11pt; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                    th, td { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 10pt; text-align: left; }
-                    th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; }
-                </style>
-            </head>
-            <body>
-                <h2>Loan Amortization Summary</h2>
-                <div class="summary-box">
-                    <p><strong>Principal Amount:</strong> ${resPrincipal.textContent}</p>
-                    <p><strong>Monthly Payment:</strong> ${resPayment.textContent}</p>
-                    <p><strong>Total Interest:</strong> ${resTotalInterest.textContent}</p>
-                    <p><strong>Total Repayment:</strong> ${resTotalPayment.textContent}</p>
-                    <p><strong>Calculation Method:</strong> ${interestTypeSelect.options[interestTypeSelect.selectedIndex].text}</p>
-                    <p><strong>Loan Term:</strong> ${loanTermMonthsInput.value} Months</p>
-                </div>
-                <h2>Monthly Amortization Schedule</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Payment</th>
-                            <th>Principal</th>
-                            <th>Interest</th>
-                            <th>Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-        currentScheduleData.forEach(row => {
-            htmlContent += `
-                <tr>
-                    <td>Month ${row.period}</td>
-                    <td>${formatCurrency(row.payment)}</td>
-                    <td>${formatCurrency(row.principal)}</td>
-                    <td>${formatCurrency(row.interest)}</td>
-                    <td>${formatCurrency(row.balance)}</td>
-                </tr>
-            `;
-        });
-
-        htmlContent += `
-                    </tbody>
-                </table>
-            </body>
-            </html>
-        `;
-
-        const converted = htmlDocx.asBlob(htmlContent);
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(converted);
-        link.download = "Loan_Amortization_Schedule.docx";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    function exportToCSV() {
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Month,Payment,Principal,Interest,Balance\r\n";
-
-        currentScheduleData.forEach(row => {
-            let rowData = [
-                `Month ${row.period}`,
-                row.payment.toFixed(2),
-                row.principal.toFixed(2),
-                row.interest.toFixed(2),
-                row.balance.toFixed(2)
-            ];
-            csvContent += rowData.join(",") + "\r\n";
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "Loan_Amortization_Schedule.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    [loanAmountInput, interestRateInput, loanTermMonthsInput, interestTypeSelect].forEach(element => {
-        element.addEventListener('input', calculateLoan);
-        element.addEventListener('change', calculateLoan);
-    });
-
-    calculateLoan();
+  const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Loan_Amortization_Schedule.doc";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }, 100);
+}
 </script>
-
 </body>
 </html>
