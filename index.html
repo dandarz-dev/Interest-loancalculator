@@ -95,6 +95,52 @@ select {
 
 input:focus, select:focus { outline: 1px solid var(--brand); }
 
+/* CHECKBOX ROW WITH CHECK SYMBOL INDICATOR */
+.checkbox-row-box {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  margin-top: 4px;
+}
+.checkbox-row-box:hover {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: var(--brand);
+}
+.checkbox-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.checkbox-row-box input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--brand);
+  cursor: pointer;
+  margin: 0;
+}
+.checkbox-row-box label {
+  margin-bottom: 0;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #38bdf8;
+  user-select: none;
+}
+.admin-check-badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
 .calc-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -117,6 +163,19 @@ input:focus, select:focus { outline: 1px solid var(--brand); }
   font-size: 16px;
   font-weight: 700;
   color: #fff;
+}
+
+.formula-result-box {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid #2563eb;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  color: #38bdf8;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .table-container {
@@ -238,6 +297,7 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
   .table-container { max-height: none; overflow: visible; border: 1px solid #ccc; }
   .calc-summary { background: #f8fafc; border: 1px solid #ccc; }
   .calc-summary div val { color: #000 !important; }
+  .formula-result-box { background: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a !important; }
   .sub-box { color: #000 !important; border: 1px solid #ccc; background: #fff !important; }
   .signature-footer { color: #000 !important; border-top: 1px solid #ccc; }
 }
@@ -285,14 +345,15 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
               <option value="Flat">Flat Rate</option>
               <option value="Diminishing">Diminishing Rate</option>
               <option value="Compound">Compound Rate</option>
-              <option value="BDO Rate">BDO Rate</option>
+              <option value="BDO-DEMI Rate">BDO-DEMI Rate</option>
+              <option value="BPI-COMP Rate">BPI-COMP Rate</option>
             </select>
           </div>
           <div class="formrow">
             <label>Term (Months)</label>
             <input id="calcT" type="number" min="1" value="12" oninput="runStandaloneCalc()">
           </div>
-          <div class="formrow" style="grid-column: 1 / -1;">
+          <div class="formrow">
             <label>Payment Frequency</label>
             <select id="calcFreq" onchange="runStandaloneCalc()">
               <option value="Monthly">Monthly</option>
@@ -301,9 +362,22 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
               <option value="Daily">Daily</option>
             </select>
           </div>
+          <div class="formrow">
+            <label>Admin Fee / Period (₱)</label>
+            <input id="calcAdminFee" type="number" min="0" step="0.01" placeholder="e.g. 50" oninput="runStandaloneCalc()">
+          </div>
+
+          <!-- CHECKBOX WITH CHECK SYMBOL INDICATOR -->
+          <div class="checkbox-row-box" onclick="document.getElementById('calcApplyAdmin').click(); event.stopPropagation();">
+            <div class="checkbox-left">
+              <input id="calcApplyAdmin" type="checkbox" checked onchange="runStandaloneCalc()">
+              <label for="calcApplyAdmin">Apply Admin Fee to Installment</label>
+            </div>
+            <div id="adminCheckBadge" class="admin-check-badge">✓ APPLIED</div>
+          </div>
         </div>
 
-        <button class="btn btn-danger" onclick="openGcashModal()">🔄 Reset Data</button>
+        <button class="btn btn-danger" onclick="openGcashModal()" style="margin-top: 14px;">🔄 Reset Data</button>
 
         <div style="margin-top: 20px;">
           <b style="font-size: 16px; color: #ffffff;">CALCULATION RESULT</b>
@@ -320,6 +394,11 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
               <label>Per Installment</label>
               <val id="resInstallment" style="color: #38bdf8;">₱0.00</val>
             </div>
+          </div>
+          
+          <!-- FORMULA TEXT RESULT FORMAT -->
+          <div id="resFormulaOutput" class="formula-result-box">
+            Enter loan details to view formula breakdown
           </div>
         </div>
       </div>
@@ -342,13 +421,14 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
                 <th>Beginning</th>
                 <th>Principal</th>
                 <th>Interest</th>
-                <th>Total</th>
+                <th>Admin Fee</th>
+                <th>Equal Payment</th>
                 <th>Ending</th>
               </tr>
             </thead>
             <tbody id="scheduleBody">
               <tr>
-                <td colspan="6" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td>
+                <td colspan="7" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td>
               </tr>
             </tbody>
           </table>
@@ -389,53 +469,69 @@ function periodsPerMonth(f){return f==='Daily'?30:f==='Weekly'?4:f==='Every 15 D
 function monthsToPeriods(term,f){return Math.max(1,Math.round(Number(term)*periodsPerMonth(f)))}
 
 function loanCalc(l){
-  const p=+l.principal||0,r=+l.interest/100,t=+l.term||0,n=monthsToPeriods(t,l.freq),rp=r/periodsPerMonth(l.freq);
-  let interest=0;
-  if(l.type==='Compound'){
-    interest=p*(Math.pow(1+rp,n)-1);
+  const p=+l.principal||0, r=+l.interest/100, t=+l.term||0, n=monthsToPeriods(t,l.freq), rp=r/periodsPerMonth(l.freq);
+  let interest=0, total=0;
+
+  if(l.type==='Compound' || l.type==='BPI-COMP Rate' || l.type==='BPI Rate'){
+    total = p * Math.pow(1 + rp, n);
+    interest = total - p;
   } else if(l.type==='Diminishing'){
-    let bal=p,pp=p/n;for(let i=0;i<n;i++){interest+=bal*rp;bal=Math.max(0,bal-pp)}
-  } else if(l.type==='BDO Rate'){
-    interest=p*r*t;
+    let bal=p, pp=p/n;
+    for(let i=0; i<n; i++){
+      let ip = bal * rp;
+      interest += ip;
+      bal = Math.max(0, bal - pp);
+    }
+    total = p + interest;
+  } else if(l.type==='BDO-DEMI Rate' || l.type==='BDO Rate'){
+    interest = p * r * t;
+    total = p + interest;
   } else {
-    interest=p*r*t;
+    interest = p * r * t;
+    total = p + interest;
   }
-  return{interest,total:p+interest,n}
+  return {interest, total, n}
 }
 
-function generateSchedule(l, n, totalInterest) {
+function generateSchedule(l, n, totalInterest, adminFeePerPeriod) {
   const p = +l.principal || 0;
   let schedule = [];
   let balance = p;
+  const r = +l.interest / 100;
+  const rp = r / periodsPerMonth(l.freq);
 
   if (l.type === 'Diminishing') {
-    const r = +l.interest / 100;
-    const rp = r / periodsPerMonth(l.freq);
     let principalPerPeriod = p / n;
     for (let i = 1; i <= n; i++) {
       let beg = balance;
       let interestPayment = beg * rp;
       let principalPayment = (i === n) ? beg : principalPerPeriod;
-      let totalPayment = principalPayment + interestPayment;
+      let totalPayment = principalPayment + interestPayment + adminFeePerPeriod;
       let end = Math.max(0, beg - principalPayment);
       
-      schedule.push({i, beg, principal: principalPayment, interest: interestPayment, total: totalPayment, end});
+      schedule.push({i, beg, principal: principalPayment, interest: interestPayment, adminFee: adminFeePerPeriod, total: totalPayment, end});
       balance = end;
     }
-  } else if (l.type === 'Compound') {
-    const r = +l.interest / 100;
-    const rp = r / periodsPerMonth(l.freq);
+  } else if (l.type === 'Compound' || l.type === 'BPI-COMP Rate' || l.type === 'BPI Rate') {
+    let totalRepayment = p + totalInterest;
+    let basePmt = totalRepayment / n;
+
     for (let i = 1; i <= n; i++) {
       let beg = balance;
       let interestPayment = beg * rp;
-      let principalPayment = (i === n) ? beg : (totalInterest / n);
-      let totalPayment = principalPayment + interestPayment;
-      let end = Math.max(0, beg + interestPayment - totalPayment);
-      
-      schedule.push({i, beg, principal: principalPayment, interest: interestPayment, total: totalPayment, end});
+      let principalPayment = basePmt - interestPayment;
+      let totalPayment = basePmt + adminFeePerPeriod;
+
+      if (i === n || principalPayment > beg) {
+        principalPayment = beg;
+        totalPayment = principalPayment + interestPayment + adminFeePerPeriod;
+      }
+
+      let end = Math.max(0, beg - principalPayment);
+      schedule.push({i, beg, principal: principalPayment, interest: interestPayment, adminFee: adminFeePerPeriod, total: totalPayment, end});
       balance = end;
     }
-  } else if (l.type === 'BDO Rate') {
+  } else if (l.type === 'BDO-DEMI Rate' || l.type === 'BDO Rate') {
     let totalRepayment = p + totalInterest;
     let fixedInstallment = totalRepayment / n;
     let sumOfPeriods = (n * (n + 1)) / 2;
@@ -445,44 +541,63 @@ function generateSchedule(l, n, totalInterest) {
       let beg = remainingBal;
       let weight = (n - i + 1);
       let periodInterest = totalInterest * (weight / sumOfPeriods);
-      let periodTotal = fixedInstallment;
-      let periodPrincipal = periodTotal - periodInterest;
+      let periodPrincipal = fixedInstallment - periodInterest;
+      let periodTotal = fixedInstallment + adminFeePerPeriod;
       
       if (i === n) {
         periodPrincipal = remainingBal;
-        periodTotal = periodPrincipal + periodInterest;
+        periodTotal = periodPrincipal + periodInterest + adminFeePerPeriod;
       }
       
       let end = Math.max(0, remainingBal - periodPrincipal);
-      schedule.push({i, beg, principal: periodPrincipal, interest: periodInterest, total: periodTotal, end});
+      schedule.push({i, beg, principal: periodPrincipal, interest: periodInterest, adminFee: adminFeePerPeriod, total: periodTotal, end});
       remainingBal = end;
     }
   } else {
     let principalPerPeriod = p / n;
     let interestPerPeriod = totalInterest / n;
-    let totalPerPeriod = principalPerPeriod + interestPerPeriod;
+    let totalPerPeriod = principalPerPeriod + interestPerPeriod + adminFeePerPeriod;
 
     for (let i = 1; i <= n; i++) {
       let beg = balance;
       let principalPayment = (i === n) ? balance : principalPerPeriod;
       let end = Math.max(0, beg - principalPayment);
 
-      schedule.push({i, beg, principal: principalPayment, interest: interestPerPeriod, total: totalPerPeriod, end});
+      schedule.push({i, beg, principal: principalPayment, interest: interestPerPeriod, adminFee: adminFeePerPeriod, total: totalPerPeriod, end});
       balance = end;
     }
   }
   return schedule;
 }
 
+function updateAdminBadgeUI() {
+  const isChecked = $('calcApplyAdmin').checked;
+  const badge = $('adminCheckBadge');
+  if (isChecked) {
+    badge.textContent = '✓ APPLIED';
+    badge.style.color = 'var(--success)';
+    badge.style.background = 'rgba(16, 185, 129, 0.15)';
+  } else {
+    badge.textContent = '✕ OFF';
+    badge.style.color = 'var(--danger)';
+    badge.style.background = 'rgba(239, 68, 68, 0.15)';
+  }
+}
+
 let currentScheduleData = [];
 let currentLoanMeta = {};
 
 function runStandaloneCalc(){
+  updateAdminBadgeUI();
+  
   const p = +$('calcP').value || 0;
   const r = +$('calcR').value || 0;
   const t = +$('calcT').value || 0;
   const type = $('calcType').value;
   const freq = $('calcFreq').value || 'Monthly';
+  const adminFeeInput = +$('calcAdminFee').value || 0;
+  const applyAdmin = $('calcApplyAdmin').checked;
+  const adminFeePerPeriod = applyAdmin ? adminFeeInput : 0;
 
   const tbody = $('scheduleBody');
 
@@ -490,7 +605,8 @@ function runStandaloneCalc(){
     $('resInterest').textContent = peso(0);
     $('resTotal').textContent = peso(0);
     $('resInstallment').textContent = peso(0);
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td></tr>`;
+    $('resFormulaOutput').textContent = 'Enter loan details to view formula breakdown';
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td></tr>`;
     currentScheduleData = [];
     currentLoanMeta = {};
     localStorage.removeItem('utang_calc_data');
@@ -500,12 +616,28 @@ function runStandaloneCalc(){
   const tmpLoan = { principal: p, interest: r, term: t, type: type, freq: freq };
   const calc = loanCalc(tmpLoan);
 
-  $('resInterest').textContent = peso(calc.interest);
-  $('resTotal').textContent = peso(calc.total);
-  $('resInstallment').textContent = peso(calc.total / (calc.n || 1));
+  const totalAdminFee = adminFeePerPeriod * calc.n;
+  const finalTotalRepayment = calc.total + totalAdminFee;
+  const installmentVal = (calc.total / (calc.n || 1)) + adminFeePerPeriod;
 
-  currentLoanMeta = { ...tmpLoan, interestTotal: calc.interest, totalRepayment: calc.total, installment: calc.total / calc.n, n: calc.n };
-  currentScheduleData = generateSchedule(tmpLoan, calc.n, calc.interest);
+  $('resInterest').textContent = peso(calc.interest);
+  $('resTotal').textContent = peso(finalTotalRepayment);
+  $('resInstallment').textContent = peso(installmentVal);
+
+  const formulaString = `${peso(p)} @ ${r}% ${type} x ${t} Month(s)${adminFeePerPeriod > 0 ? ` + ₱${adminFeePerPeriod} Admin Fee` : ''} = ${peso(installmentVal)} equal ${freq.toLowerCase()} amortization`;
+  $('resFormulaOutput').textContent = formulaString;
+
+  currentLoanMeta = { 
+    ...tmpLoan, 
+    interestTotal: calc.interest, 
+    totalRepayment: finalTotalRepayment, 
+    installment: installmentVal, 
+    n: calc.n,
+    adminFeePerPeriod,
+    totalAdminFee,
+    applyAdmin
+  };
+  currentScheduleData = generateSchedule(tmpLoan, calc.n, calc.interest, adminFeePerPeriod);
 
   tbody.innerHTML = currentScheduleData.map(row => `
     <tr>
@@ -513,13 +645,14 @@ function runStandaloneCalc(){
       <td>${peso(row.beg)}</td>
       <td>${peso(row.principal)}</td>
       <td>${peso(row.interest)}</td>
+      <td>${peso(row.adminFee)}</td>
       <td>${peso(row.total)}</td>
       <td>${peso(row.end)}</td>
     </tr>
   `).join('');
 
   const stateToSave = {
-    p, r, t, type, freq,
+    p, r, t, type, freq, adminFeeInput, applyAdmin,
     schedule: currentScheduleData,
     meta: currentLoanMeta
   };
@@ -542,12 +675,16 @@ function closeModalAndReset() {
   $('calcT').value = '12';
   $('calcType').value = 'Fixed Rate';
   $('calcFreq').value = 'Monthly';
+  $('calcAdminFee').value = '';
+  $('calcApplyAdmin').checked = true;
+  updateAdminBadgeUI();
   
   $('resInterest').textContent = peso(0);
   $('resTotal').textContent = peso(0);
   $('resInstallment').textContent = peso(0);
+  $('resFormulaOutput').textContent = 'Enter loan details to view formula breakdown';
   
-  $('scheduleBody').innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td></tr>`;
+  $('scheduleBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ffffff;">Enter loan details to view schedule</td></tr>`;
   
   currentScheduleData = [];
   currentLoanMeta = {};
@@ -565,6 +702,11 @@ window.addEventListener('DOMContentLoaded', () => {
       $('calcT').value = data.t || '';
       $('calcType').value = data.type || 'Fixed Rate';
       $('calcFreq').value = data.freq || 'Monthly';
+      $('calcAdminFee').value = data.adminFeeInput || '';
+      if (data.applyAdmin !== undefined) {
+        $('calcApplyAdmin').checked = data.applyAdmin;
+      }
+      updateAdminBadgeUI();
       
       if (data.schedule && data.schedule.length > 0) {
         currentScheduleData = data.schedule;
@@ -574,12 +716,16 @@ window.addEventListener('DOMContentLoaded', () => {
         $('resTotal').textContent = peso(currentLoanMeta.totalRepayment);
         $('resInstallment').textContent = peso(currentLoanMeta.installment);
 
+        const formulaString = `${peso(data.p)} @ ${data.r}% ${data.type||'Fixed Rate'} x ${data.t} Month(s)${currentLoanMeta.adminFeePerPeriod > 0 ? ` + ₱${currentLoanMeta.adminFeePerPeriod} Admin Fee` : ''} = ${peso(currentLoanMeta.installment)} equal ${data.freq ? data.freq.toLowerCase() : 'monthly'} amortization`;
+        $('resFormulaOutput').textContent = formulaString;
+
         $('scheduleBody').innerHTML = currentScheduleData.map(row => `
           <tr>
             <td>${row.i}</td>
             <td>${peso(row.beg)}</td>
             <td>${peso(row.principal)}</td>
             <td>${peso(row.interest)}</td>
+            <td>${peso(row.adminFee)}</td>
             <td>${peso(row.total)}</td>
             <td>${peso(row.end)}</td>
           </tr>
@@ -588,6 +734,8 @@ window.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error("Error loading saved state", e);
     }
+  } else {
+    updateAdminBadgeUI();
   }
 });
 
@@ -614,6 +762,8 @@ function saveAsExcel() {
     ["Rate Type", currentLoanMeta.type],
     ["Term (Months)", currentLoanMeta.term],
     ["Payment Frequency", currentLoanMeta.freq],
+    ["Admin Fee / Period", currentLoanMeta.adminFeePerPeriod || 0],
+    ["Total Admin Fee", currentLoanMeta.totalAdminFee || 0],
     ["Total Interest", currentLoanMeta.interestTotal],
     ["Total Repayment", currentLoanMeta.totalRepayment],
     ["Per Installment", currentLoanMeta.installment],
@@ -621,8 +771,8 @@ function saveAsExcel() {
     []
   ];
 
-  const header = ["Period", "Beginning Balance", "Principal", "Interest", "Total Payment", "Ending Balance"];
-  const rows = currentScheduleData.map(r => [r.i, r.beg, r.principal, r.interest, r.total, r.end]);
+  const header = ["Period", "Beginning Balance", "Principal", "Interest", "Admin Fee", "Equal Payment", "Ending Balance"];
+  const rows = currentScheduleData.map(r => [r.i, r.beg, r.principal, r.interest, r.adminFee, r.total, r.end]);
 
   const wsData = summaryData.concat([header], rows);
   const ws = XLSX.utils.aoa_to_sheet(wsData);
@@ -655,6 +805,7 @@ function saveAsWord() {
       <p><b>Principal Amount:</b> ₱${Number(currentLoanMeta.principal || 0).toLocaleString()}</p>
       <p><b>Interest Rate:</b> ${currentLoanMeta.interest}% (${currentLoanMeta.type})</p>
       <p><b>Term:</b> ${currentLoanMeta.term} Month(s) | <b>Frequency:</b> ${currentLoanMeta.freq}</p>
+      <p><b>Admin Fee / Period:</b> ₱${Number(currentLoanMeta.adminFeePerPeriod || 0).toFixed(2)}</p>
       <p><b>Total Interest:</b> ₱${Number(currentLoanMeta.interestTotal || 0).toFixed(2)} | <b>Total Repayment:</b> ₱${Number(currentLoanMeta.totalRepayment || 0).toFixed(2)}</p>
       
       <table>
@@ -664,7 +815,8 @@ function saveAsWord() {
             <th>Beginning</th>
             <th>Principal</th>
             <th>Interest</th>
-            <th>Total</th>
+            <th>Admin Fee</th>
+            <th>Equal Payment</th>
             <th>Ending</th>
           </tr>
         </thead>
@@ -678,6 +830,7 @@ function saveAsWord() {
         <td>₱${Number(row.beg || 0).toFixed(2)}</td>
         <td>₱${Number(row.principal || 0).toFixed(2)}</td>
         <td>₱${Number(row.interest || 0).toFixed(2)}</td>
+        <td>₱${Number(row.adminFee || 0).toFixed(2)}</td>
         <td>₱${Number(row.total || 0).toFixed(2)}</td>
         <td>₱${Number(row.end || 0).toFixed(2)}</td>
       </tr>
