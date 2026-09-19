@@ -31,6 +31,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 12px;
+  padding-bottom: 80px; /* Leave space for floating widget */
 }
 
 button, input, select, textarea { 
@@ -287,13 +288,149 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
   color: var(--muted);
 }
 
+/* FLOATING CALCULATOR STYLES */
+.floating-calc-container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+  font-family: inherit;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(17, 26, 46, 0.95);
+  backdrop-filter: blur(8px);
+  width: 260px;
+  transition: all 0.3s ease;
+}
+
+.floating-calc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #0f172a;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom: 1px solid var(--card-border);
+  cursor: pointer;
+  user-select: none;
+}
+
+.floating-calc-header span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.floating-calc-controls button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.floating-calc-controls button:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.floating-calc-body {
+  padding: 10px;
+}
+
+.floating-calc-screen {
+  background: #090d16;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.floating-calc-history {
+  font-size: 11px;
+  color: #64748b;
+  min-height: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.floating-calc-output {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.floating-calc-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.f-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 8px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.f-btn:hover {
+  background: #334155;
+}
+.f-btn:active {
+  background: #475569;
+}
+
+.f-btn.op {
+  background: rgba(37, 99, 235, 0.4);
+  border-color: var(--brand);
+  color: #38bdf8;
+}
+.f-btn.op:hover {
+  background: rgba(37, 99, 235, 0.7);
+}
+
+.f-btn.action {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+.f-btn.action:hover {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+.f-btn.equals {
+  background: var(--success);
+  border-color: #059669;
+  color: #fff;
+}
+.f-btn.equals:hover {
+  background: #059669;
+}
+
 @media print {
   body { background: #fff; color: #000; display: block; padding: 0; }
   .card { border: none; box-shadow: none; padding: 0; background: #fff; color: #000; }
   input, select { border: 1px solid #ccc; background: #fff; color: #000; }
   th { background: #eee !important; color: #000 !important; }
   tr:hover { background: transparent; }
-  .btn-group, .btn-danger, .modal-overlay { display: none !important; }
+  .btn-group, .btn-danger, .modal-overlay, .floating-calc-container { display: none !important; }
   .table-container { max-height: none; overflow: visible; border: 1px solid #ccc; }
   .calc-summary { background: #f8fafc; border: 1px solid #ccc; }
   .calc-summary div val { color: #000 !important; }
@@ -308,12 +445,13 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
 }
 
 @media (max-width: 540px) {
-  body { padding: 8px; }
+  body { padding: 8px; padding-bottom: 70px; }
   .card { padding: 14px; }
   .formgrid { grid-template-columns: 1fr; }
   .calc-summary { grid-template-columns: 1fr; gap: 8px; }
   .btn { width: 100%; flex: none; }
   .signature-footer { text-align: center; }
+  .floating-calc-container { width: calc(100% - 24px); right: 12px; left: 12px; bottom: 12px; }
 }</style>
 <!-- SheetJS for Excel export functionality -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -443,6 +581,46 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
   </div>
 </main>
 
+<!-- FLOATING CALCULATOR WIDGET FIXED AT LOWER BOTTOM -->
+<div id="floatingCalc" class="floating-calc-container">
+  <div class="floating-calc-header" onclick="toggleFloatingCalc()">
+    <span>🧮 Quick Calculator</span>
+    <div class="floating-calc-controls">
+      <button id="floatingToggleBtn" title="Minimize/Maximize">_</button>
+    </div>
+  </div>
+  <div id="floatingCalcBody" class="floating-calc-body">
+    <div class="floating-calc-screen">
+      <div id="fCalcHistory" class="floating-calc-history">0</div>
+      <div id="fCalcOutput" class="floating-calc-output">0</div>
+    </div>
+    <div class="floating-calc-keypad">
+      <button class="f-btn action" onclick="fClear()">C</button>
+      <button class="f-btn action" onclick="fBackSpace()">⌫</button>
+      <button class="f-btn op" onclick="fAppendOp('/')">÷</button>
+      <button class="f-btn op" onclick="fAppendOp('*')">×</button>
+
+      <button class="f-btn" onclick="fAppendNum('7')">7</button>
+      <button class="f-btn" onclick="fAppendNum('8')">8</button>
+      <button class="f-btn" onclick="fAppendNum('9')">9</button>
+      <button class="f-btn op" onclick="fAppendOp('-')">-</button>
+
+      <button class="f-btn" onclick="fAppendNum('4')">4</button>
+      <button class="f-btn" onclick="fAppendNum('5')">5</button>
+      <button class="f-btn" onclick="fAppendNum('6')">6</button>
+      <button class="f-btn op" onclick="fAppendOp('+')">+</button>
+
+      <button class="f-btn" onclick="fAppendNum('1')">1</button>
+      <button class="f-btn" onclick="fAppendNum('2')">2</button>
+      <button class="f-btn" onclick="fAppendNum('3')">3</button>
+      <button class="f-btn equals" onclick="fCalculate()" style="grid-row: span 2;">=</button>
+
+      <button class="f-btn" onclick="fAppendNum('0')" style="grid-column: span 2;">0</button>
+      <button class="f-btn" onclick="fAppendDot()">.</button>
+    </div>
+  </div>
+</div>
+
 <!-- GCASH DONATION MODAL POPUP -->
 <div id="gcashModal" class="modal-overlay">
   <div class="modal-content">
@@ -450,7 +628,7 @@ tr:hover { background: rgba(30, 41, 59, 0.4); }
     <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">We accept donation in order to maintain the web app.</p>
     
     <div class="gcash-qr">
-      <img src="gcash_2.png" alt="GCash QR">
+      <img src="gcash_2.png" alt="GCash QR" onerror="this.src='https://placehold.co/200x200/ffffff/000000?text=GCash+QR'">
     </div>
     
     <p style="font-size: 14px; font-weight: bold; margin: 6px 0; color: #fff;">Account Name: DA**&ast;&ast;O D.</p>
@@ -692,6 +870,89 @@ function closeModalAndReset() {
   localStorage.removeItem('utang_calc_data');
 }
 
+/* FLOATING CALCULATOR LOGIC */
+let fInput = '0';
+let fHistory = '';
+let fIsMinimzed = false;
+
+function toggleFloatingCalc() {
+  const body = $('floatingCalcBody');
+  const btn = $('floatingToggleBtn');
+  fIsMinimzed = !fIsMinimzed;
+  if(fIsMinimzed) {
+    body.style.display = 'none';
+    btn.textContent = '+';
+  } else {
+    body.style.display = 'block';
+    btn.textContent = '_';
+  }
+}
+
+function updateFScreen() {
+  $('fCalcOutput').textContent = fInput;
+  $('fCalcHistory').textContent = fHistory || '0';
+}
+
+function fAppendNum(num) {
+  if (fInput === '0' || fInput === 'Error') {
+    fInput = num;
+  } else {
+    fInput += num;
+  }
+  updateFScreen();
+}
+
+function fAppendDot() {
+  const parts = fInput.split(/[\+\-\*\/]/);
+  const lastPart = parts[parts.length - 1];
+  if (!lastPart.includes('.')) {
+    fInput += '.';
+    updateFScreen();
+  }
+}
+
+function fAppendOp(op) {
+  if (fInput === 'Error') return;
+  const lastChar = fInput.slice(-1);
+  if (['+', '-', '*', '/'].includes(lastChar)) {
+    fInput = fInput.slice(0, -1) + op;
+  } else {
+    fInput += op;
+  }
+  updateFScreen();
+}
+
+function fClear() {
+  fInput = '0';
+  fHistory = '';
+  updateFScreen();
+}
+
+function fBackSpace() {
+  if (fInput === 'Error' || fInput.length <= 1) {
+    fInput = '0';
+  } else {
+    fInput = fInput.slice(0, -1);
+  }
+  updateFScreen();
+}
+
+function fCalculate() {
+  try {
+    // Sanitized evaluation for basic expressions
+    let sanitized = fInput.replace(/×/g, '*').replace(/÷/g, '/');
+    let res = Function('"use strict";return (' + sanitized + ')')();
+    if (!isFinite(res)) throw new Error();
+    fHistory = fInput + ' =';
+    fInput = String(Math.round(res * 100000000) / 100000000);
+    updateFScreen();
+  } catch (e) {
+    fHistory = fInput;
+    fInput = 'Error';
+    updateFScreen();
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const saved = localStorage.getItem('utang_calc_data');
   if (saved) {
@@ -737,6 +998,7 @@ window.addEventListener('DOMContentLoaded', () => {
   } else {
     updateAdminBadgeUI();
   }
+  updateFScreen();
 });
 
 function printSchedule() {
